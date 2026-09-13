@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>You're offline · Perfect Games</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(1100px 600px at 85% -10%, rgba(77,159,255,.14), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(246,196,83,.08), transparent 55%),
+      #0b1020;
+    color: #eef1f7;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
+  }
+  .card { max-width: 420px; }
+  .mark {
+    font-size: 52px; color: #f6c453; display: inline-block;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  @keyframes sparkle { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.18) rotate(18deg); } }
+  h1 { font-size: 24px; margin: 14px 0 8px; }
+  p { color: #98a2ba; font-size: 15px; line-height: 1.55; margin-bottom: 22px; }
+  button {
+    background: linear-gradient(180deg,#ffe9b0,#e8a93c); color: #241a04; border: none;
+    font: inherit; font-weight: 800; font-size: 14px; letter-spacing: .02em;
+    padding: 12px 22px; border-radius: 12px; cursor: pointer;
+  }
+  button:active { transform: translateY(1px); }
+  .hint { margin-top: 18px; font-size: 12.5px; color: #6b768f; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="mark">✦</span>
+    <h1>You're offline</h1>
+    <p>Perfect Games needs an internet connection to play — rooms are live and hosted in memory on the server, so there's nothing saved locally to play offline.</p>
+    <button onclick="location.reload()">Try again</button>
+    <div class="hint">Once you're back online this page will reconnect automatically.</div>
+  </div>
+</body>
+</html>

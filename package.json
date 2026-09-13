@@ -1,0 +1,40 @@
+{
+  "name": "perfect-games",
+  "version": "1.0.0",
+  "description": "✦ Perfect Games — 7 instant multiplayer browser games (Sequence, Ludo, UNO, Tic-Tac-Toe, Draw & Guess, Dumb Charades, Tambola/Housie). No sign-up, no database, no storage — rooms live in server memory and friends join via a room code or link. WebSockets, smart bots, pass-and-play, fully responsive.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/unit.js && node test/ludo-unit.js && node test/uno-unit.js && node test/ttt-unit.js && node test/seq-ui.js && node test/drawguess-unit.js && node test/dg-dom.js && node test/charades-unit.js && node test/ch-dom.js && node test/tambola-unit.js && node test/tb-dom.js && node test/dom.js"
+  },
+  "keywords": [
+    "games",
+    "multiplayer",
+    "websocket",
+    "sequence",
+    "ludo",
+    "uno",
+    "tambola",
+    "housie",
+    "charades",
+    "draw-guess",
+    "canvas",
+    "webaudio",
+    "nodejs",
+    "express",
+    "no-database",
+    "real-time"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0",
+    "puppeteer-core": "^24.43.1"
+  }
+}

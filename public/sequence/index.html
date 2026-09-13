@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sequence — the classic 5-in-a-row card &amp; chips game. Play with friends on one device or via a link, or vs bots. No sign-up, no storage.">
+<title>Sequence · Perfect Games</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Perfect Games">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="/sequence/style.css?v=8">
+</head>
+<body>
+
+<header id="topbar">
+  <a class="brand" href="/"><span class="brand-mark" data-icon="sparkles" data-size="18"></span><span>PERFECT&nbsp;GAMES</span></a>
+  <div class="top-actions">
+    <button id="btnInstall" class="ghost icon-btn hidden" title="Install app" data-icon="install"></button>
+    <button id="btnHome" class="ghost icon-btn" title="Back to menu" data-icon="home"></button>
+    <button id="btnSound" class="ghost icon-btn" title="Sound" data-icon="sound"></button>
+    <button id="btnLeave" class="ghost icon-btn danger hidden" title="Leave room" data-icon="leave"></button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ MODE SELECT (first page) ============ -->
+  <section id="modeView" class="view">
+    <div class="mode-hero">
+      <div id="miniBoard" class="mini-board" aria-hidden="true"></div>
+      <div class="mode-eyebrow">✦ PERFECT GAMES PRESENTS ✦</div>
+      <h1 class="mode-title">SEQUENCE</h1>
+      <p class="mode-sub">The classic card &amp; chip battle. Play a card, place a chip, and be the first to line up <b>five in a row</b> — across, down or diagonal. Jacks are wild. Corners are free.</p>
+      <div class="mode-pills">
+        <span class="pill">🎴 2 decks</span>
+        <span class="pill">👥 2–6 players</span>
+        <span class="pill">🤖 Smart bots</span>
+        <span class="pill">⚡ No sign-up</span>
+      </div>
+
+      <div class="name-row">
+        <label for="modeName">Your name</label>
+        <input id="modeName" maxlength="16" placeholder="What should we call you?" autocomplete="off">
+        <button id="diceName" class="ghost icon-btn" title="Random name" data-icon="dice"></button>
+      </div>
+
+      <div class="mode-cards">
+        <button class="mode-card bots" id="btnBots">
+          <span class="mc-icon" data-icon="bot" data-size="40"></span>
+          <span class="mc-title">Play with Bots</span>
+          <span class="mc-sub">Solo vs smart bots — jump straight in</span>
+        </button>
+        <button class="mode-card friends" id="btnFriends">
+          <span class="mc-icon" data-icon="users" data-size="40"></span>
+          <span class="mc-title">Play with Friends</span>
+          <span class="mc-sub">Same device or via a link — your call</span>
+        </button>
+      </div>
+
+      <div class="mode-or"><span>or</span></div>
+      <div class="mode-join">
+        <label class="mode-join-label" for="joinCodeInput">Have a room code?</label>
+        <div class="mode-join-row">
+          <input id="joinCodeInput" maxlength="6" placeholder="ENTER CODE" autocomplete="off" spellcheck="false">
+          <button id="joinCodeBtn" class="primary">Join</button>
+        </div>
+      </div>
+
+      <p class="mode-foot">No downloads · nothing stored · rooms vanish when you leave</p>
+    </div>
+  </section>
+
+  <!-- ============ LOBBY (online multiplayer / same device) ============ -->
+  <section id="lobbyView" class="hidden view">
+    <div class="lobby-wrap">
+      <div class="card invite-card" id="inviteCard">
+        <div class="invite-hero">
+          <div class="invite-ico" data-icon="users" data-size="34"></div>
+          <h2 id="lobbyTitle">Invite a friend to join</h2>
+          <p class="muted" id="lobbySub">Share the room code — friends enter it on their screen to join.</p>
+        </div>
+        <div id="inviteActions"></div>
+      </div>
+      <div class="card players-card">
+        <div class="card-head">
+          <h3><span data-icon="users" data-size="15"></span>&nbsp;Players</h3>
+          <span id="seatCount" class="badge">1/6</span>
+        </div>
+        <div id="setupInfo" class="setup-line"></div>
+        <div id="playerList" class="player-list"></div>
+        <div id="lobbyControls"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="gameView" class="hidden view">
+    <div id="turnBanner"></div>
+    <div id="gameOverBar" class="hidden"></div>
+    <div id="teamStrip"></div>
+
+    <div id="gameLayout">
+      <div id="boardCol">
+        <div id="boardWrap"><div id="board"></div></div>
+        <div id="handArea">
+          <div id="handHint">Your cards</div>
+          <div id="hand"></div>
+        </div>
+        <div id="feedStrip"></div>
+      </div>
+      <aside id="sidePanel">
+        <div class="panel-tabs">
+          <button data-tab="players"><span data-icon="users" data-size="15"></span></button>
+          <button data-tab="moves"><span data-icon="zap" data-size="15"></span></button>
+          <button data-tab="chat" class="on"><span data-icon="chat" data-size="15"></span></button>
+        </div>
+        <div id="panelBody" class="panel-body"></div>
+      </aside>
+    </div>
+
+    <div id="winnerOverlay" class="hidden">
+      <div class="win-card">
+        <button id="winClose" class="win-close" title="Close and view the board" data-icon="close" data-size="16"></button>
+        <div class="win-trophy" data-icon="trophy" data-size="64"></div>
+        <div id="winTitle" class="win-title">WINNER</div>
+        <div id="winSub" class="muted"></div>
+        <div class="win-btns">
+          <button id="btnRematch" class="primary hidden rematch-btn"><span data-icon="refresh" data-size="15"></span>&nbsp;Play again</button>
+          <button id="btnNewRoom" class="ghost"><span data-icon="plus" data-size="15"></span>&nbsp;New room</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ BOT SETUP MODAL ============ -->
+<div id="botModal" class="modal hidden">
+  <div class="modal-card">
+    <button id="botClose" class="x-btn abs" title="Close" data-icon="close" data-size="16"></button>
+    <div class="modal-logo"><span data-icon="bot" data-size="16"></span>&nbsp;PLAY WITH BOTS</div>
+    <h2>Pick your rivals</h2>
+    <p class="muted small" style="margin-bottom:8px">How many bots?</p>
+    <div id="botCountRow" class="bot-count"></div>
+    <div id="botTeamPreview" class="team-preview"></div>
+    <p class="muted small" style="margin-bottom:8px">Difficulty</p>
+    <div class="diff-row">
+      <button id="diffPro" class="on">🧠 Pro</button>
+      <button id="diffChill">😴 Chill</button>
+    </div>
+    <button id="botStart" class="primary big" style="width:100%"><span data-icon="play" data-size="16"></span>&nbsp;Start game</button>
+    <p class="muted small center" style="margin-top:10px">Your friends can still join with the room link while you play.</p>
+  </div>
+</div>
+
+<!-- ============ FRIENDS MODE MODAL ============ -->
+<div id="friendsModal" class="modal hidden">
+  <div class="modal-card">
+    <button id="friendsClose" class="x-btn abs" title="Close" data-icon="close" data-size="16"></button>
+    <div class="modal-logo"><span data-icon="users" data-size="16"></span>&nbsp;PLAY WITH FRIENDS</div>
+    <h2>How do you want to play?</h2>
+    <div class="opt-stack">
+      <button id="btnSame" class="opt-btn">
+        <span class="ob-ico" data-icon="phone" data-size="30"></span>
+        <span class="ob-txt">
+          <span class="ob-title">Same device</span>
+          <span class="ob-sub">Pass &amp; play — take turns on this screen, no link needed</span>
+        </span>
+      </button>
+      <button id="btnDevices" class="opt-btn">
+        <span class="ob-ico" data-icon="share" data-size="30"></span>
+        <span class="ob-txt">
+          <span class="ob-title">Different devices</span>
+          <span class="ob-sub">Create a room, share the link, friends join from anywhere</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOTSEAT (same device) MODAL ============ -->
+<div id="hotseatModal" class="modal hidden">
+  <div class="modal-card">
+    <button id="hotseatClose" class="x-btn abs" title="Close" data-icon="close" data-size="16"></button>
+    <div class="modal-logo"><span data-icon="phone" data-size="16"></span>&nbsp;SAME DEVICE</div>
+    <h2>Pass &amp; play</h2>
+    <p class="muted small" style="margin-bottom:8px">How many players?</p>
+    <div id="hsCountRow" class="bot-count"></div>
+    <div id="hsTeamPreview" class="team-preview"></div>
+    <p class="muted small" style="margin-bottom:8px">Player names</p>
+    <div id="hsNames" class="hs-names"></div>
+    <button id="hsStart" class="primary big" style="width:100%"><span data-icon="play" data-size="16"></span>&nbsp;Start game</button>
+    <p class="muted small center" style="margin-top:10px">Each player sees their own cards only on their turn.</p>
+  </div>
+</div>
+
+<!-- ============ JOIN MODAL (via friend's link) ============ -->
+<div id="joinModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-logo">✦ PERFECT GAMES</div>
+    <h2 id="modalTitle">Join game</h2>
+    <input id="nameInput" maxlength="16" placeholder="Your name" autocomplete="off">
+    <button id="modalAction" class="primary big" style="width:100%">Join</button>
+    <p class="muted small center" id="modalNote">No sign-up. No storage. Just play.</p>
+  </div>
+</div>
+
+<!-- ============ PASS-THE-DEVICE OVERLAY (hotseat only) ============ -->
+<div id="passOverlay" class="hidden">
+  <div class="pass-card">
+    <div class="pass-ico" data-icon="phone" data-size="44"></div>
+    <div class="pass-title">Pass the device to</div>
+    <div id="passName" class="pass-name"></div>
+    <button id="passOk" class="primary big pass-ok"><span data-icon="eye" data-size="16"></span>&nbsp;I'm ready — show my cards</button>
+  </div>
+</div>
+
+<div id="connBanner" class="hidden">Connection lost — reconnecting…</div>
+<div id="toasts"></div>
+
+<script src="/shared/vendor/qrcode.js"></script>
+<script src="/shared/pwa.js"></script>
+<script src="/shared/icons.js?v=5"></script>
+<script src="/shared/sound.js?v=8"></script>
+<script src="/sequence/app.js?v=8"></script>
+</body>
+</html>

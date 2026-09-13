@@ -1,0 +1,26 @@
+# render.yaml — Perfect Games one-click deploy blueprint (Render free tier)
+#
+# How to use:
+#   1. Push this repo to GitHub / GitLab / Bitbucket.
+#   2. In Render:  New → Blueprint → pick the repo → Apply.
+#   (Or skip the blueprint: New → Web Service → "Public Git Repository"
+#    → paste the public repo URL → Runtime: Docker → plan: Free → Deploy.)
+#
+# Free-tier notes (Hobby plan):
+#   • Web service spins down after 15 min without traffic; the first visit
+#     after that takes ~30–60 s to wake up (cold start).
+#   • 750 compute hours/month — enough for 24/7 if you keep it pinged
+#     (e.g. a free UptimeRobot monitor every 5 min).
+#   • 5 GB outbound bandwidth/month (Hobby plan as of April 2026).
+#   • Rooms are in-memory by design — a spin-down clears them, as does
+#     an empty room. No database is used.
+#   • WebSockets work out of the box: the server serves HTTP + WS on one
+#     port and honors Render's injected PORT env var.
+services:
+  - type: web
+    name: perfect-games
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: true

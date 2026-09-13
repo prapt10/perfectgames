@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Perfect Games — free instant multiplayer games with friends. No sign-up, no downloads, no storage. Play Sequence now.">
+<title>Perfect Games — Free multiplayer games, no sign-up</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Perfect Games">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { scrollbar-width: thin; scrollbar-color: rgba(246, 196, 83, 0.55) rgba(255, 255, 255, 0.06); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(246, 196, 83, 0.65), rgba(240, 184, 60, 0.35)); border-radius: 99px; border: 2.5px solid rgba(11, 16, 32, 0.75); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(246, 196, 83, 0.85); }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  :root {
+    --bg: #0b1020; --bg2: #0f1730; --panel: rgba(255,255,255,.055); --line: rgba(255,255,255,.12);
+    --text: #eef1f7; --muted: #98a2ba; --gold: #f6c453; --gold2: #ffd97a;
+  }
+  body {
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(77,159,255,.14), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(246,196,83,.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 0; border-bottom: 1px solid var(--line);
+  }
+  .brand { font-weight: 900; letter-spacing: .16em; font-size: 15px; display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); }
+  .brand .mark { color: var(--gold); display: grid; place-items: center; animation: sparkle 3s ease-in-out infinite; }
+  @keyframes sparkle { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.18) rotate(18deg); } }
+  .join-quick { display: flex; gap: 8px; align-items: center; }
+  .join-quick input {
+    background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--text); font: inherit; font-size: 13px; padding: 8px 12px; width: 170px;
+    letter-spacing: .12em; text-transform: uppercase; text-align: center;
+  }
+  .join-quick input:focus { outline: none; border-color: var(--gold); }
+  .hero { text-align: center; padding: 56px 0 26px; }
+  .hero h1 { font-size: clamp(30px, 5.4vw, 50px); letter-spacing: .02em; margin-bottom: 12px; }
+  .hero h1 em { font-style: normal; background: linear-gradient(180deg,#ffe9b0,#e8a93c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 620px; margin: 0 auto; }
+  .hero .badges { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--muted);
+    border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 7px 15px;
+    transition: border-color .2s, color .2s, transform .2s;
+  }
+  .badge:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+  .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 20px; padding: 34px 0 60px; }
+  .game {
+    position: relative; border-radius: 20px; border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    padding: 0 0 20px; text-decoration: none; color: var(--text);
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform .16s ease, box-shadow .22s ease, border-color .22s;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0,0,0,.3);
+  }
+  a.game:hover { transform: translateY(-6px); box-shadow: 0 22px 54px rgba(0,0,0,.55); border-color: rgba(246,196,83,.55); }
+  a.game:hover .art { transform: scale(1.04); }
+  .game .art {
+    height: 132px; border-radius: 20px 20px 0 0;
+    display: grid; place-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s ease;
+  }
+  .game .art::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(140% 90% at 50% 0%, rgba(255,255,255,.1), transparent 55%);
+    pointer-events: none;
+  }
+  .game .art svg { filter: drop-shadow(0 8px 18px rgba(0,0,0,.5)); position: relative; z-index: 1; }
+  .game .body { padding: 0 18px; display: flex; flex-direction: column; gap: 8px; }
+  .game .name { font-size: 20px; font-weight: 900; letter-spacing: .05em; display: flex; align-items: center; gap: 8px; }
+  .game .desc { color: var(--muted); font-size: 13px; line-height: 1.5; min-height: 38px; }
+  .game .go {
+    align-self: flex-start; margin-top: 2px; font-size: 13px; font-weight: 800; color: #241a02;
+    background: linear-gradient(180deg, var(--gold2), #f0b83c); border-radius: 10px; padding: 9px 18px;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: transform .12s, box-shadow .2s;
+    box-shadow: 0 6px 16px rgba(246,196,83,.25);
+  }
+  a.game:hover .go { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(246,196,83,.4); }
+  .game.coming { opacity: .8; }
+  .game.coming .go { background: var(--panel); color: var(--muted); border: 1px solid var(--line); box-shadow: none; cursor: pointer; }
+  .game.coming .go:hover { border-color: var(--gold); color: var(--gold); }
+  .game.coming .art { filter: saturate(.5) brightness(.85); }
+  .soon-tag {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    font-size: 10px; font-weight: 800; letter-spacing: .12em; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; text-transform: uppercase;
+    background: rgba(11,16,32,.75); backdrop-filter: blur(4px);
+  }
+  .live-tag {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    font-size: 10px; font-weight: 800; letter-spacing: .12em; color: #06281a;
+    border-radius: 999px; padding: 4px 11px; text-transform: uppercase;
+    background: linear-gradient(180deg,#5cf2a7,#2bbd7d);
+    animation: livePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes livePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,.5); } 50% { box-shadow: 0 0 16px 4px rgba(52,211,153,.35); } }
+
+  /* --- sequence art --- */
+  .art.seq { background: radial-gradient(circle at 50% 35%, #1d2745, #10162b); }
+  .seq-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; padding: 8px; width: 92%; }
+  .seq-board i { background: #232e52; border-radius: 2px; aspect-ratio: 1; position: relative; }
+  .seq-board i.chip::after { content:""; position:absolute; inset:16%; border-radius:50%; background: var(--c,#ff5b5b); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.5); }
+  .seq-board i.corner { background: rgba(246,196,83,.45); }
+  .seq-board i.chip { animation: chipPulse 2.4s ease-in-out infinite; }
+  .seq-board i.chip:nth-child(3n) { animation-delay: .4s; }
+  .seq-board i.chip:nth-child(4n) { animation-delay: .9s; }
+  @keyframes chipPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+
+  /* --- ludo art --- */
+  .art.ludo { background: radial-gradient(circle at 50% 35%, #173a2e, #0d1f19); }
+  .die {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: linear-gradient(180deg, #fff, #d9deea);
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    padding: 9px; gap: 3px;
+    box-shadow: 0 10px 26px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.9);
+  }
+  .die i { border-radius: 50%; background: #1a2238; align-self: center; justify-self: center; width: 9px; height: 9px; opacity: 0; transition: opacity .2s; }
+  .die i.on { opacity: 1; }
+  a.game:hover .die { animation: dieRoll .5s ease; }
+  @keyframes dieRoll { 0% { transform: rotate(0) scale(1); } 35% { transform: rotate(-18deg) scale(.85) translateY(-8px); } 70% { transform: rotate(12deg) scale(1.05); } 100% { transform: rotate(0) scale(1); } }
+  .ludo-tokens { position: absolute; inset: 0; pointer-events: none; }
+  .ludo-tokens b {
+    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    display: block; box-shadow: inset 0 0 0 2px rgba(255,255,255,.5), 0 4px 8px rgba(0,0,0,.5);
+    animation: tokenBob 2.2s ease-in-out infinite;
+  }
+  .ludo-tokens b:nth-child(1) { background:#ff5b5b; left: 18%; top: 24%; }
+  .ludo-tokens b:nth-child(2) { background:#4d9fff; left: 70%; top: 30%; animation-delay:.4s; }
+  .ludo-tokens b:nth-child(3) { background:#34d399; left: 26%; top: 64%; animation-delay:.8s; }
+  .ludo-tokens b:nth-child(4) { background:#f6c453; left: 68%; top: 62%; animation-delay:1.2s; }
+  @keyframes tokenBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+  /* --- uno art --- */
+  .art.uno { background: radial-gradient(circle at 50% 35%, #3a1626, #1c0a12); }
+  .uno-card {
+    width: 62px; height: 92px; border-radius: 10px;
+    background: linear-gradient(180deg, #fff, #e7eaf4);
+    position: relative;
+    box-shadow: 0 12px 30px rgba(0,0,0,.55);
+    transition: transform .3s ease;
+  }
+  a.game:hover .uno-card { transform: rotate(-6deg) translateY(-6px) scale(1.06); }
+  .uno-card .oval {
+    position: absolute; inset: 14px 10px; border-radius: 50%;
+    background: linear-gradient(180deg, #ff7b7b, #e02929);
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 19px; color: #fff; letter-spacing: .04em;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,.18);
+  }
+  .uno-card .mini { position: absolute; font-weight: 900; font-size: 8px; color: #e02929; }
+  .uno-card .mini.tl { top: 5px; left: 7px; }
+  .uno-card .mini.br { bottom: 5px; right: 7px; transform: rotate(180deg); }
+  .uno-card2 { width: 52px; height: 78px; border-radius: 9px; background: linear-gradient(180deg,#ffd97a,#e8a93c); position: absolute; left: -16px; top: -10px; box-shadow: 0 8px 22px rgba(0,0,0,.5); transform: rotate(-14deg); display: grid; place-items: center; font-weight: 900; color:#7a4d00; font-size: 11px; }
+  a.game:hover .uno-card2 { transform: rotate(-10deg) translate(-4px, -4px); transition: transform .3s; }
+
+  /* --- tictactoe art --- */
+  .art.tic { background: radial-gradient(circle at 50% 35%, #14243f, #0a1322); }
+  .ttt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 86px; }
+  .ttt i {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+    display: grid; place-items: center;
+    font-size: 15px; font-weight: 900;
+    transition: background .2s, transform .15s;
+  }
+  a.game:hover .ttt i { background: rgba(255,255,255,.12); }
+  .ttt i.x { color: #4d9fff; }
+  .ttt i.o { color: #f6c453; }
+
+  /* --- draw & guess art --- */
+  .art.dg { background: #fdfdfb; position: relative; display: grid; place-items: center; }
+  .art.dg svg.dg-main { width: 82%; height: 74%; }
+  .art.dg .dg-pen {
+    position: absolute; top: 9px; right: 11px;
+    color: #1971c2;
+    transform: rotate(-26deg);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+  }
+  .art.dg .dg-tag {
+    position: absolute; bottom: 9px; right: 11px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700; font-size: 11px; letter-spacing: 0.06em;
+    color: #e03131;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 7px;
+    padding: 2px 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  }
+  /* --- charades art --- */
+  .art.chr { background: radial-gradient(circle at 50% 30%, #2a1f4d, #150f2b); }
+  .art.chr .chr-masks { display: flex; gap: 16px; align-items: center; }
+  .art.chr .chr-mask {
+    width: 52px; height: 58px;
+    background:
+      radial-gradient(circle 6px at 17px 22px, #150f2b 97%, transparent),
+      radial-gradient(circle 6px at 35px 22px, #150f2b 97%, transparent),
+      linear-gradient(180deg, #ffd97a, #e8a93c);
+    border-radius: 26px 26px 22px 22px;
+    position: relative;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 -6px 12px rgba(0, 0, 0, 0.18);
+  }
+  .art.chr .chr-mask::after {
+    content: "";
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 20px; height: 12px;
+  }
+  .art.chr .chr-mask.smile::after { bottom: 9px; border-radius: 0 0 20px 20px; border: 3px solid #150f2b; border-top: none; }
+  .art.chr .chr-mask.frown::after { top: 30px; border-radius: 20px 20px 0 0; border: 3px solid #150f2b; border-bottom: none; }
+  .art.chr .chr-tag {
+    position: absolute; bottom: 8px; right: 10px;
+    font-size: 9.5px; font-weight: 900; letter-spacing: 0.12em;
+    color: #ff9d9d;
+    background: rgba(255, 91, 91, 0.12);
+    border: 1px solid rgba(255, 91, 91, 0.4);
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+  /* --- tambola art --- */
+  .art.tb { background: radial-gradient(circle at 50% 35%, #14382b, #0a1f18); }
+  .art.tb .tb-ticket {
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px;
+    width: 138px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+  .art.tb .tb-ticket .tb-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }
+  .art.tb .tb-ticket .tb-row + .tb-row { margin-top: 2px; }
+  .art.tb .tb-ticket i {
+    aspect-ratio: 1;
+    font-style: normal;
+    font-size: 7px;
+    font-weight: 900;
+    color: #1a2238;
+    display: grid;
+    place-items: center;
+    background: #eef1f7;
+    border-radius: 2px;
+  }
+  .art.tb .tb-ticket i.hit { background: #f6c453; color: #241a02; }
+  .art.tb .tb-tag {
+    position: absolute; bottom: 8px; right: 10px;
+    font-size: 9.5px; font-weight: 900; letter-spacing: 0.12em;
+    color: #ffd97a;
+    background: rgba(246, 196, 83, 0.14);
+    border: 1px solid rgba(246, 196, 83, 0.45);
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+
+  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; text-align: center; color: var(--muted); font-size: 13px; }
+  footer b { color: var(--gold); letter-spacing: .08em; }
+  .btn {
+    font: inherit; cursor: pointer; border: none; background: none; color: var(--text);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px;
+    display: inline-flex; align-items: center; gap: 7px; transition: border-color .15s, color .15s;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold); }
+  #toasts { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+  .toast { background: #1d2745; border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 10px 20px; font-size: 13.5px; box-shadow: 0 12px 38px rgba(0,0,0,.5); animation: toastIn .22s ease; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } }
+  @media (max-width: 640px) {
+    .join-quick { display: none; }
+    .hero { padding-top: 36px; }
+    .game .desc { min-height: 0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+    <a class="brand" href="/">
+      <span class="mark">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f6c453" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.4 2.4.9-2.4.9L19 21.6l-.9-2.4-2.4-.9 2.4-.9z"/><path d="M5 2l.7 1.8L7.5 4.5l-1.8.7L5 7l-.7-1.8L2.5 4.5l1.8-.7z"/></svg>
+      </span>PERFECT&nbsp;GAMES
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="btn" id="installBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 11 12 16 17 11"/><path d="M5 20h14"/></svg>
+        Install App
+      </button>
+      <div class="join-quick">
+        <input id="joinCode" placeholder="ROOM CODE" maxlength="6" autocomplete="off">
+        <button class="btn" id="joinBtn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Join
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Play with friends.<br><em>Perfectly simple.</em></h1>
+    <p>Instant multiplayer games in your browser. Share a link, jump in — <b>no sign-up, no downloads, no storage</b>.</p>
+    <div class="badges">
+      <span class="badge">🚀 No sign-up</span>
+      <span class="badge">🔗 Play via link</span>
+      <span class="badge">🤖 Solo vs bots</span>
+      <span class="badge">🧠 Free forever</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="games">
+
+    <!-- SEQUENCE -->
+    <a class="game" href="/sequence">
+      <span class="live-tag">● Live</span>
+      <div class="art seq">
+        <div class="seq-board" id="seqArt"></div>
+      </div>
+      <div class="body">
+        <div class="name">SEQUENCE</div>
+        <div class="desc">5 in a row wins. Cards, chips, wild Jacks — with friends or bots.</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- LUDO -->
+    <a class="game" href="/ludo">
+      <span class="live-tag">● Live</span>
+      <div class="art ludo">
+        <div class="die" id="die">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="ludo-tokens"><b></b><b></b><b></b><b></b></div>
+      </div>
+      <div class="body">
+        <div class="name">LUDO</div>
+        <div class="desc">Classic race-to-home dice game for 2–4 players. Roll, move, win!</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- UNO -->
+    <a class="game" href="/uno">
+      <span class="live-tag">● Live</span>
+      <div class="art uno">
+        <div class="uno-card2">UNO</div>
+        <div class="uno-card">
+          <span class="mini tl">UNO</span>
+          <span class="oval">7</span>
+          <span class="mini br">UNO</span>
+        </div>
+      </div>
+      <div class="body">
+        <div class="name">UNO</div>
+        <div class="desc">Fast card mayhem. Match colors, drop Skips, Reverses &amp; +2s, and call UNO!</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- TIC-TAC-TOE -->
+    <a class="game" href="/ttt">
+      <span class="live-tag">● Live</span>
+      <div class="art tic">
+        <div class="ttt" id="ttt">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+      <div class="body">
+        <div class="name">TIC-TAC-TOE</div>
+        <div class="desc">The two-minute classic. Noughts and crosses, bots and buddies.</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- DRAW & GUESS -->
+    <a class="game" href="/drawguess">
+      <span class="live-tag">● Live</span>
+      <div class="art dg">
+        <svg class="dg-main" viewBox="0 0 120 90" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="96" cy="16" r="8" fill="#f59f00" stroke="none"/>
+          <path d="M14 76 L30 40 L46 76" stroke="#8d5524" stroke-width="3"/>
+          <path d="M30 44 a12 12 0 1 1 0.1 0" stroke="#2f9e44" stroke-width="3"/>
+          <path d="M56 76 L56 50 L80 50 L80 76" stroke="#1a1a2e" stroke-width="3"/>
+          <path d="M52 54 L68 30 L84 54" stroke="#1a1a2e" stroke-width="3"/>
+          <circle cx="68" cy="60" r="3.4" stroke="#1971c2" stroke-width="2.6"/>
+          <path d="M34 14 q10 -8 20 0 q10 8 20 0" stroke="#9c36b5" stroke-width="3"/>
+        </svg>
+        <svg class="dg-pen" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span class="dg-tag">CAT?</span>
+      </div>
+      <div class="body">
+        <div class="name">DRAW &amp; GUESS</div>
+        <div class="desc">Sketch a secret word, friends race to guess it. Fastest guessers win!</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- DUMB CHARADES -->
+    <a class="game" href="/charades">
+      <span class="live-tag">● Live</span>
+      <div class="art chr">
+        <div class="chr-masks">
+          <div class="chr-mask smile"></div>
+          <div class="chr-mask frown"></div>
+        </div>
+        <span class="chr-tag">NO TALKING!</span>
+      </div>
+      <div class="body">
+        <div class="name">DUMB CHARADES</div>
+        <div class="desc">Act out Hindi movies &amp; songs while your team guesses. No talking, all fun!</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+    <!-- TAMBOLA / HOUSIE -->
+    <a class="game" href="/tambola">
+      <span class="live-tag">● Live</span>
+      <div class="art tb">
+        <div class="tb-ticket">
+          <div class="tb-row"><i>5</i><i>11</i><i></i><i></i><i>40</i><i></i><i></i><i>73</i><i></i></div>
+          <div class="tb-row"><i></i><i></i><i>22</i><i>34</i><i></i><i>56</i><i></i><i></i><i class="hit">84</i></div>
+          <div class="tb-row"><i></i><i>17</i><i></i><i></i><i>45</i><i></i><i class="hit">62</i><i></i><i></i></div>
+        </div>
+        <span class="tb-tag">FULL HOUSE!</span>
+      </div>
+      <div class="body">
+        <div class="name">TAMBOLA / HOUSIE</div>
+        <div class="desc">Grab a ticket, mark the numbers, and be first to claim Early Five, lines &amp; Full House!</div>
+        <div class="go">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play now
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><b>PERFECT GAMES</b> · more games landing soon</p>
+    <p style="margin-top:6px">No accounts · no data stored · rooms vanish when you leave</p>
+  </div>
+</footer>
+
+<div id="toasts"></div>
+
+<script src="/shared/pwa.js"></script>
+<script>
+  // mini sequence board
+  const seq = document.getElementById('seqArt');
+  const cells = [];
+  for (let i = 0; i < 100; i++) {
+    const c = document.createElement('i');
+    if (i === 0 || i === 9 || i === 90 || i === 99) c.classList.add('corner');
+    seq.appendChild(c); cells.push(c);
+  }
+  const colors = ['#ff5b5b', '#4d9fff', '#34d399'];
+  for (let k = 0; k < 30; k++) {
+    const i = Math.floor(Math.random() * 100);
+    if (i === 0 || i === 9 || i === 90 || i === 99) continue;
+    cells[i].classList.add('chip');
+    cells[i].style.setProperty('--c', colors[Math.floor(Math.random() * 3)]);
+  }
+
+  // dice: interactive roll on hover/click
+  const DOTMAP = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  const die = document.getElementById('die');
+  const dots = die.querySelectorAll('i');
+  let dieVal = 5;
+  function setDie(v) {
+    dieVal = v;
+    dots.forEach((d, i) => d.classList.toggle('on', DOTMAP[v].includes(i)));
+  }
+  setDie(5);
+  function rollDie() {
+    die.style.animation = 'none';
+    void die.offsetWidth;
+    die.style.animation = 'dieRoll .5s ease';
+    setTimeout(() => setDie(1 + Math.floor(Math.random() * 6)), 120);
+  }
+  die.parentElement.parentElement.querySelector('.go').addEventListener('click', e => { e.preventDefault(); rollDie(); });
+  die.addEventListener('click', rollDie);
+  setInterval(() => { if (!document.hidden) setDie(1 + Math.floor(Math.random() * 6)); }, 3200); // idle rolls
+
+  // tic-tac-toe: draw X/O on hover
+  const tttCells = document.querySelectorAll('#ttt i');
+  let tttTurn = 0;
+  tttCells.forEach(cell => {
+    cell.addEventListener('mouseenter', () => {
+      if (!cell.textContent) {
+        cell.textContent = tttTurn % 2 === 0 ? '✕' : '◯';
+        cell.classList.add(tttTurn % 2 === 0 ? 'x' : 'o');
+        tttTurn++;
+        if (tttTurn > 8) setTimeout(() => {
+          tttCells.forEach(c => { c.textContent = ''; c.className = ''; });
+          tttTurn = 0;
+        }, 1600);
+      }
+    });
+  });
+
+  // install-app button (PWA)
+  (function () {
+    const installBtn = document.getElementById('installBtn');
+    function showIfEligible() {
+      if (window.PGInstall && window.PGInstall.isStandalone()) return; // already installed
+      if (window.PGInstall && window.PGInstall.deferred) { installBtn.style.display = 'inline-flex'; }
+    }
+    window.addEventListener('pg:install-available', showIfEligible);
+    window.addEventListener('pg:installed', () => { installBtn.style.display = 'none'; toast('Installed! Launch Perfect Games from your home screen anytime. 🎉'); });
+    // iOS Safari has no beforeinstallprompt — show the button with instructions instead.
+    if (window.PGInstall && window.PGInstall.isIOS() && !window.PGInstall.isStandalone()) {
+      installBtn.style.display = 'inline-flex';
+    }
+    setTimeout(showIfEligible, 300);
+    installBtn.addEventListener('click', async () => {
+      if (window.PGInstall && window.PGInstall.isIOS()) {
+        toast('On iPhone/iPad: tap Share ⬆️ then "Add to Home Screen"');
+        return;
+      }
+      const outcome = await (window.PGInstall ? window.PGInstall.prompt() : 'unavailable');
+      if (outcome === 'unavailable') toast('Install option not available yet — try again in a moment, or use your browser menu → "Install app".');
+      else if (outcome === 'dismissed') toast('No worries — you can install anytime from this button.');
+    });
+  })();
+
+  // join by code
+  document.getElementById('joinBtn').onclick = () => {
+    const code = document.getElementById('joinCode').value.trim().toUpperCase();
+    if (code.length >= 4) location.href = '/sequence?r=' + code;
+    else toast('Enter a room code first');
+  };
+  document.getElementById('joinCode').onkeydown = e => { if (e.key === 'Enter') document.getElementById('joinBtn').click(); };
+
+  // coming-soon toast
+  document.querySelectorAll('.game.coming').forEach(card => {
+    card.addEventListener('click', e => {
+      e.preventDefault();
+      toast('Coming soon! 🚧 Keep an eye out — ' + card.querySelector('.name').textContent + ' is on the way.');
+    });
+  });
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.getElementById('toasts').appendChild(t);
+    setTimeout(() => t.remove(), 2600);
+  }
+</script>
+</body>
+</html>

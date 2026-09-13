@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# debug screenshots (real screenshots live in docs/screenshots)
+test/shots/
+
+# logs & local
+*.log
+npm-debug.log*
+.DS_Store
+.env
+.env.local
+
+# editors / os
+.vscode/
+.idea/
+*.swp
