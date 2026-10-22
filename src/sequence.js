@@ -43,6 +43,34 @@ for (let c = 0; c < 10; c++) for (let r = 0; r <= 5; r++) WINDOWS.push([0,1,2,3,
 for (let r = 0; r <= 5; r++) for (let c = 0; c <= 5; c++) WINDOWS.push([0,1,2,3,4].map(i => (r+i)*10 + c + i));
 for (let r = 0; r <= 5; r++) for (let c = 4; c < 10; c++) WINDOWS.push([0,1,2,3,4].map(i => (r+i)*10 + c - i));
 
+/* ----------------------------------------------------------------------
+ * Group every 5-cell window onto its underlying straight line (row,
+ * column or either diagonal) so we can tell "6 in a row" (one line,
+ * two overlapping windows) apart from two genuinely separate sequences.
+ * Official Sequence rule: a chip may be shared by at most one *other*
+ * sequence — two windows on the same line only both count if they
+ * overlap by at most 1 cell (i.e. their start offsets differ by >= 4).
+ * Windows on different lines never share more than a single cell, so
+ * they never need this check.
+ * ------------------------------------------------------------------- */
+const WINDOW_LINES = (() => {
+  const groups = new Map(); // lineKey -> [{ idx, start }]
+  WINDOWS.forEach((w, idx) => {
+    const r0 = Math.floor(w[0] / 10), c0 = w[0] % 10;
+    const r4 = Math.floor(w[4] / 10), c4 = w[4] % 10;
+    let key, start;
+    if (r0 === r4) { key = 'row' + r0; start = c0; }               // horizontal
+    else if (c0 === c4) { key = 'col' + c0; start = r0; }          // vertical
+    else if (c4 - c0 === 4) { key = 'd1' + (r0 - c0); start = r0; } // ↘ diagonal
+    else { key = 'd2' + (r0 + c0); start = r0; }                   // ↙ diagonal
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ idx, start });
+  });
+  // sort each line's windows by their start offset for the greedy pick below
+  for (const arr of groups.values()) arr.sort((a, b) => a.start - b.start);
+  return [...groups.values()];
+})();
+
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -142,9 +170,25 @@ function windowsFor(board, team) {
   return out;
 }
 
+// True sequence count for a team: counts how many *non-overlapping-by-more-
+// than-1-cell* 5-chip windows exist. This is what actually decides a win —
+// e.g. 6 chips in a row only ever forms ONE sequence (the two raw windows
+// you can draw through it share 4 cells), while 9+ in a row can form two.
+function countSequences(board, team) {
+  let total = 0;
+  for (const line of WINDOW_LINES) {
+    let lastStart = -Infinity;
+    for (const { idx, start } of line) {
+      if (!WINDOWS[idx].every(i => covered(board[i], team))) continue;
+      if (start - lastStart >= 4) { total++; lastStart = start; }
+    }
+  }
+  return total;
+}
+
 // recompute sequence counts for every team
 function recomputeSeqCount(s) {
-  for (let t = 0; t < s.teamCount; t++) s.seqCount[t] = windowsFor(s.board, t).length;
+  for (let t = 0; t < s.teamCount; t++) s.seqCount[t] = countSequences(s.board, t);
 }
 
 // recompute protected chips for every team
@@ -325,7 +369,7 @@ function botMove(s, seatId, skill) {
     }
     return { maxSeq, imminent };
   };
-  const myWindows = () => windowsFor(s.board, t).length;
+  const myWindows = () => countSequences(s.board, t);
   const myThreats = () => { // open cells that would complete a window for me
     let n = 0;
     for (let i = 0; i < 100; i++) {
@@ -457,6 +501,6 @@ function publicState(s, viewerSeatId) {
 module.exports = {
   RANKS, SUITS, SUIT_SYM, WINDOWS, CORNERS,
   kindOf, cardLabel, handSize,
-  createGame, apply, botMove, deadCards, publicState, windowsFor,
+  createGame, apply, botMove, deadCards, publicState, windowsFor, countSequences,
   turnOf, teamOf, lockAll, recomputeSeqCount, skipTurn,
 };

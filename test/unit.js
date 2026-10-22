@@ -39,6 +39,24 @@ function playableMove(s, seatId) {
   }
   return null;
 }
+// like playableMove, but only ever returns a move that actually places a chip on
+// the board (skips one-eyed Jacks, which just remove/discard and never place) —
+// for tests that need to inspect the resulting board cell.
+function placingMove(s, seatId) {
+  for (const c of s.hands[seatId]) {
+    const kind = eng.kindOf(c.key);
+    if (kind === 'n') {
+      for (let i = 0; i < 100; i++) {
+        const cell = s.board[i];
+        if (!cell.corner && cell.chip === null && cell.key === c.key) return { t: 'play', uid: c.uid, cell: i };
+      }
+    } else if (kind === 'w2') {
+      for (let i = 0; i < 100; i++) if (!s.board[i].corner && s.board[i].chip === null)
+        return { t: 'play', uid: c.uid, cell: i };
+    }
+  }
+  return null;
+}
 
 console.log('Sequence engine tests');
 
@@ -86,7 +104,7 @@ t('play a normal card: chip placed, card discarded, hand refilled, turn passes',
   const s = mk(3);
   const seatId = eng.turnOf(s);
   const before = s.hands[seatId].length;
-  const move = playableMove(s, seatId);
+  const move = placingMove(s, seatId);
   assert.ok(move);
   const r = eng.apply(s, seatId, move);
   assert.ok(r.ok, r.error);
@@ -101,7 +119,9 @@ t('invalid moves are rejected', () => {
   const s = mk(3);
   const seatId = eng.turnOf(s);
   const hand = s.hands[seatId];
-  const anyCard = hand[0];
+  // use an ordinary numbered card — a wild (two-eyed) jack is legally playable
+  // anywhere, so picking one here would make the "mismatched cell" premise false
+  const anyCard = hand.find(c => eng.kindOf(c.key) === 'n') || hand[0];
   // play a mismatched cell
   let mismatched = -1;
   for (let i = 0; i < 100; i++) {
@@ -213,6 +233,88 @@ t('two sequences needed for 2-player games', () => {
   const r = eng.apply(s, 'p0', { t: 'play', uid: 'a', cell: target });
   assert.ok(r.ok, r.error);
   assert.strictEqual(s.phase, 'playing'); // one chip alone never wins
+});
+
+t('6 in a row is only ONE sequence, not two (2-player game must not win)', () => {
+  const s = mk(2); // 2 teams, needs 2 sequences
+  // pre-place 5 team-0 chips in a row (row 2, cols 1-5): one complete sequence
+  const row = 2;
+  for (let c = 1; c <= 5; c++) s.board[row * 10 + c].chip = 0;
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: 5-in-a-row is exactly 1 sequence');
+
+  // extend it to 6-in-a-row by playing the 6th consecutive cell (col 6)
+  const cell = row * 10 + 6;
+  s.board[cell].key = '7H';
+  s.hands.p0 = [{ uid: 'ext', key: '7H' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'ext', cell });
+  assert.ok(r.ok, r.error);
+
+  assert.strictEqual(s.seqCount[0], 1, '6 consecutive chips still count as only 1 sequence');
+  assert.strictEqual(s.phase, 'playing', '6-in-a-row must NOT win a 2-sequence game');
+  assert.strictEqual(s.winner, null);
+});
+
+t('9 in a row legitimately makes two sequences (1-cell overlap allowed)', () => {
+  const s = mk(2);
+  const row = 3;
+  // pre-place 8 team-0 chips in a row (cols 0-7)
+  for (let c = 0; c <= 7; c++) s.board[row * 10 + c].chip = 0;
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: 8-in-a-row is still only 1 sequence');
+
+  // the 9th chip (col 8) creates windows [0-4] and [4-8], sharing exactly 1 cell — legal
+  const cell = row * 10 + 8;
+  s.board[cell].key = '9S';
+  s.hands.p0 = [{ uid: 'ninth', key: '9S' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'ninth', cell });
+  assert.ok(r.ok, r.error);
+
+  assert.strictEqual(s.seqCount[0], 2, '9-in-a-row forms 2 valid (1-overlap) sequences');
+  assert.strictEqual(s.phase, 'over', '9-in-a-row should complete a 2-sequence win');
+  assert.strictEqual(s.winner, 0);
+});
+
+t('6 in a diagonal (↘) is only ONE sequence, not two', () => {
+  const s = mk(2);
+  // pre-place 5 team-0 chips diagonally (down-right): 11,22,33,44,55
+  for (const cell of [11, 22, 33, 44]) s.board[cell].chip = 0;
+  s.board[55].key = '8C';
+  s.hands.p0 = [{ uid: 'd5', key: '8C' }];
+  let r = eng.apply(s, 'p0', { t: 'play', uid: 'd5', cell: 55 });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: 5-in-a-diagonal is exactly 1 sequence');
+  assert.strictEqual(s.phase, 'playing');
+
+  // extend to 6-in-a-diagonal by playing cell 66 (next turn is p1's — place directly then recompute)
+  s.board[66].chip = 0;
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, '6 consecutive diagonal chips still count as only 1 sequence');
+  assert.notStrictEqual(s.phase, 'over', '6-in-a-diagonal must NOT win a 2-sequence game');
+});
+
+t('6 in a diagonal (↙) is only ONE sequence, not two', () => {
+  const s = mk(2);
+  // down-left diagonal: 18,27,36,45,54,63
+  for (const cell of [18, 27, 36, 45, 54, 63]) s.board[cell].chip = 0;
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, '6 consecutive anti-diagonal chips still count as only 1 sequence');
+  assert.notStrictEqual(s.phase, 'over');
+});
+
+t('crossing row + column sharing exactly 1 chip legitimately makes two sequences', () => {
+  const s = mk(2);
+  // row 5, cols 0-4
+  for (const cell of [50, 51, 52, 53, 54]) s.board[cell].chip = 0;
+  // column 2, rows 3-7 (shares cell 52 with the row above) — different direction, 1-cell overlap, legal
+  for (const cell of [32, 42, 72]) s.board[cell].chip = 0;
+  s.board[62].key = '4D';
+  s.hands.p0 = [{ uid: 'cross', key: '4D' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'cross', cell: 62 });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(s.seqCount[0], 2, 'row+column crossing at 1 shared chip legitimately forms 2 sequences');
+  assert.strictEqual(s.phase, 'over');
+  assert.strictEqual(s.winner, 0);
 });
 
 t('draw pile reshuffles discard when empty', () => {
