@@ -317,6 +317,53 @@ t('crossing row + column sharing exactly 1 chip legitimately makes two sequences
   assert.strictEqual(s.winner, 0);
 });
 
+t('Rule 1: a corner + 4 chips in a straight line is exactly ONE sequence', () => {
+  const s = mk(2); // row 0, cell 0 is a free corner
+  for (const cell of [1, 2, 3]) s.board[cell].chip = 0;
+  s.board[4].key = 'KC';
+  s.hands.p0 = [{ uid: 'c4', key: 'KC' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'c4', cell: 4 });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(s.seqCount[0], 1, 'corner + 4 real chips completes exactly 1 sequence');
+  assert.strictEqual(s.phase, 'playing', 'only 1 of 2 needed sequences so far');
+});
+
+t('Rule 2: 5 chips + a corner (virtual 6-run) is still only ONE sequence', () => {
+  const s = mk(2); // row 0, cell 0 is a free corner
+  for (const cell of [1, 2, 3, 4]) s.board[cell].chip = 0; // corner(0) + 1-4 already 1 sequence
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: corner + 4 chips = 1 sequence');
+
+  s.board[5].key = 'QS'; // extend to corner(0),1,2,3,4,5 — a virtual run of 6
+  s.hands.p0 = [{ uid: 'ext', key: 'QS' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'ext', cell: 5 });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(s.seqCount[0], 1, 'corner + 5 real chips (virtual 6-run) is still only 1 sequence');
+  assert.strictEqual(s.phase, 'playing', '6-long (even with a corner) must NOT win a 2-sequence game');
+});
+
+t('Rule 4: a run bookended by both corners needs 8 real chips (virtual 10) for two sequences', () => {
+  const s = mk(2); // row 0: corner(0), cols 1-8 real, corner(9)
+  for (const cell of [1, 2, 3, 4, 5, 6]) s.board[cell].chip = 0; // 6 real chips so far (virtual 7 with corner 0)
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: corner + 6 real chips (virtual 7) is still only 1 sequence');
+
+  s.board[7].chip = 0; // virtual 8 (corner + 7 real) — still only 1
+  eng.recomputeSeqCount(s);
+  assert.strictEqual(s.seqCount[0], 1, 'sanity: corner + 7 real chips (virtual 8) is still only 1 sequence');
+
+  // the 8th real chip (col 8) makes the row fully covered end-to-end:
+  // corner(0),1,2,3,4,5,6,7,8,corner(9) — a virtual run of 10 — this
+  // legitimately yields TWO sequences (e.g. corner0..4 and 5..corner9).
+  s.board[8].key = '6H';
+  s.hands.p0 = [{ uid: 'last', key: '6H' }];
+  const r = eng.apply(s, 'p0', { t: 'play', uid: 'last', cell: 8 });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(s.seqCount[0], 2, 'corner-to-corner virtual run of 10 forms 2 real sequences');
+  assert.strictEqual(s.phase, 'over');
+  assert.strictEqual(s.winner, 0);
+});
+
 t('draw pile reshuffles discard when empty', () => {
   const s = mk(2);
   s.deck = [];

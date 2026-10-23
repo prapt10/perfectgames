@@ -36,7 +36,9 @@ for (let i = 0; i < 2; i++) for (const r of RANKS) for (const s of SUITS) DECK_K
 
 const CORNERS = new Set([0, 9, 90, 99]);
 
-// All length-5 windows (rows, columns, both diagonals)
+// All length-5 windows (rows, columns, both diagonals). A "segment" here
+// means a candidate 5-space line that *could* become a sequence.
+const SEGMENT_LEN = 5;
 const WINDOWS = [];
 for (let r = 0; r < 10; r++) for (let c = 0; c <= 5; c++) WINDOWS.push([0,1,2,3,4].map(i => r*10 + c + i));
 for (let c = 0; c < 10; c++) for (let r = 0; r <= 5; r++) WINDOWS.push([0,1,2,3,4].map(i => (r+i)*10 + c));
@@ -44,14 +46,43 @@ for (let r = 0; r <= 5; r++) for (let c = 0; c <= 5; c++) WINDOWS.push([0,1,2,3,
 for (let r = 0; r <= 5; r++) for (let c = 4; c < 10; c++) WINDOWS.push([0,1,2,3,4].map(i => (r+i)*10 + c - i));
 
 /* ----------------------------------------------------------------------
- * Group every 5-cell window onto its underlying straight line (row,
- * column or either diagonal) so we can tell "6 in a row" (one line,
- * two overlapping windows) apart from two genuinely separate sequences.
- * Official Sequence rule: a chip may be shared by at most one *other*
- * sequence — two windows on the same line only both count if they
- * overlap by at most 1 cell (i.e. their start offsets differ by >= 4).
- * Windows on different lines never share more than a single cell, so
- * they never need this check.
+ * Official Sequence rules enforced by this counting algorithm:
+ *
+ *  Rule 1 (corner spaces)   A corner is a free/wild space for every team,
+ *                           so a 5-segment touching a corner only needs 4
+ *                           real chips. Handled by `covered()` below —
+ *                           corners are always "covered", for any team.
+ *
+ *  Rule 2 (6-in-a-row cap)  A straight run of 6 same-color chips (or 5
+ *                           chips + a corner) is still only ONE sequence.
+ *                           The two raw 5-segments you could draw through
+ *                           a run of 6 share 4 cells — far more than the
+ *                           1-cell overlap two DIFFERENT sequences are
+ *                           allowed to share — so only one of them may be
+ *                           counted.
+ *
+ *  Rule 3 (overlap <= 1)    Two counted sequences may intersect, but may
+ *                           share AT MOST one chip. Sequences on different
+ *                           lines (row vs column vs either diagonal) can
+ *                           only ever geometrically cross at a single
+ *                           cell, so that pairing is always legal as-is.
+ *                           Sequences on the SAME line are the only case
+ *                           that can share 2+ cells, so that's the one
+ *                           case this algorithm has to actively police.
+ *
+ *  Rule 4 (9-in-a-row rule) Two sequences sharing 1 cell on the very same
+ *                           straight line therefore require a run of
+ *                           5 + 5 - 1 = 9 continuous covered spaces (real
+ *                           chips and/or corners combined). 6, 7 or 8 in a
+ *                           row aren't long enough for a second valid,
+ *                           non-overlapping-too-much segment to exist.
+ *
+ * To apply rules 2-4 we group every 5-space WINDOW by the single straight
+ * line (row / column / ↘ diagonal / ↙ diagonal) it lies on, each tagged
+ * with its start offset along that line. Two windows on the same line can
+ * both be counted only if their start offsets differ by >= 4 (SEGMENT_LEN
+ * - 1), which is exactly "share at most 1 cell". Windows on different
+ * lines never need this check — see Rule 3 above.
  * ------------------------------------------------------------------- */
 const WINDOW_LINES = (() => {
   const groups = new Map(); // lineKey -> [{ idx, start }]
@@ -68,6 +99,7 @@ const WINDOW_LINES = (() => {
   });
   // sort each line's windows by their start offset for the greedy pick below
   for (const arr of groups.values()) arr.sort((a, b) => a.start - b.start);
+
   return [...groups.values()];
 })();
 
@@ -162,25 +194,47 @@ function createGame(cfg) {
 
 const turnOf = s => s.turnOrder[s.turnIdx];
 const teamOf = (s, seatId) => s.seats.find(x => x.id === seatId).team;
+
+// Rule 1: a corner is a free/wild space for every team — a segment touching
+// one only needs 4 real chips of that team's color to be fully "covered".
 const covered = (cell, team) => cell.corner || cell.chip === team;
 
+// Every raw 5-space segment ("window") that is fully covered for `team`,
+// corners included. Used for chip-locking (any chip in ANY complete
+// 5-segment is protected — see lockAll) and for bot heuristics; NOT used
+// directly for the win count, since it doesn't enforce the overlap cap.
 function windowsFor(board, team) {
   const out = [];
   for (const w of WINDOWS) if (w.every(i => covered(board[i], team))) out.push(w);
   return out;
 }
 
-// True sequence count for a team: counts how many *non-overlapping-by-more-
-// than-1-cell* 5-chip windows exist. This is what actually decides a win —
-// e.g. 6 chips in a row only ever forms ONE sequence (the two raw windows
-// you can draw through it share 4 cells), while 9+ in a row can form two.
+// Max segment start-offset gap, on the SAME line, for two segments to be
+// allowed to both count (Rules 3 & 4): segments of SEGMENT_LEN cells share
+// at most 1 cell exactly when their starts differ by >= SEGMENT_LEN - 1.
+// e.g. a 9-long covered run has valid segment starts 0 and 4 (0-indexed),
+// sharing only index 4 — the minimum run length able to yield 2 sequences
+// on one line (Rule 4). A 6, 7 or 8-long run only ever yields starts that
+// are closer together than this, so it is correctly capped at 1 (Rule 2).
+const MIN_START_GAP = SEGMENT_LEN - 1;
+
+// The true, rule-compliant sequence count for a team (Rules 1-4 combined).
+// For each straight line (row / column / either diagonal) independently,
+// greedily pick the earliest-starting covered segment, then the next
+// covered segment whose start is >= MIN_START_GAP further along, and so
+// on — this is the maximum number of segments obtainable from that line
+// without any pair sharing more than 1 cell (provably optimal for
+// same-length, evenly-constrained intervals like these). Segments on
+// different lines are summed in unconditionally: two different-direction
+// lines can only ever cross at a single shared cell, so Rule 3's overlap
+// cap is automatically satisfied for any such pair with no extra check.
 function countSequences(board, team) {
   let total = 0;
   for (const line of WINDOW_LINES) {
     let lastStart = -Infinity;
     for (const { idx, start } of line) {
-      if (!WINDOWS[idx].every(i => covered(board[i], team))) continue;
-      if (start - lastStart >= 4) { total++; lastStart = start; }
+      if (!WINDOWS[idx].every(i => covered(board[i], team))) continue; // segment not fully formed
+      if (start - lastStart >= MIN_START_GAP) { total++; lastStart = start; }
     }
   }
   return total;
